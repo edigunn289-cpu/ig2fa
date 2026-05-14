@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PANDAWA TEAM</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0a0a0a;
+    font-family:Arial;
+    color:white;
+    overflow:hidden;
+}
+
+.container{
+    width:430px;
+    background:#151515;
+    padding:40px;
+    border-radius:22px;
+    text-align:center;
+    box-shadow:
+        0 0 20px rgba(0,255,136,0.15),
+        0 0 60px rgba(0,0,0,0.7);
+    border:1px solid rgba(255,255,255,0.05);
+}
+
+.logo{
+    font-size:34px;
+    font-weight:bold;
+    margin-bottom:5px;
+    letter-spacing:4px;
+
+    background:linear-gradient(
+        90deg,
+        #00ff88,
+        #00ccff
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    text-shadow:
+        0 0 10px rgba(0,255,136,0.3);
+}
+
+.sub{
+    opacity:0.5;
+    margin-bottom:35px;
+    font-size:13px;
+    letter-spacing:3px;
+}
+
+h1{
+    margin-bottom:25px;
+    cursor:pointer;
+    user-select:none;
+    font-size:28px;
+}
+
+.inputBox{
+    position:relative;
+}
+
+input{
+    width:100%;
+    height:60px;
+    border:none;
+    outline:none;
+    border-radius:15px;
+    padding:0 120px 0 18px;
+    font-size:18px;
+    background:#232323;
+    color:white;
+    box-sizing:border-box;
+}
+
+#copyLinkBtn{
+    position:absolute;
+    right:8px;
+    top:8px;
+    height:44px;
+    padding:0 18px;
+    border:none;
+    border-radius:12px;
+    background:#00ff88;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+#copyLinkBtn:hover{
+    transform:scale(1.05);
+}
+
+#code{
+    margin-top:35px;
+    font-size:62px;
+    letter-spacing:8px;
+    color:#00ff88;
+    font-weight:bold;
+    cursor:pointer;
+    user-select:none;
+    transition:0.2s;
+    text-shadow:
+        0 0 12px rgba(0,255,136,0.35);
+}
+
+#code:hover{
+    transform:scale(1.03);
+}
+
+#timer{
+    margin-top:18px;
+    opacity:0.7;
+    font-size:15px;
+}
+
+#copyText{
+    margin-top:18px;
+    color:#00ff88;
+    opacity:0;
+    transition:0.3s;
+    font-size:14px;
+}
+
+.footer{
+    margin-top:35px;
+    opacity:0.25;
+    font-size:12px;
+    letter-spacing:2px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        PANDAWA TEAM
+    </div>
+
+    <div class="sub">
+        AUTHENTICATOR SYSTEM
+    </div>
+
+    <h1 onclick="resetAll()">
+        Instagram 2FA
+    </h1>
+
+    <div class="inputBox">
+
+        <input
+            type="text"
+            id="secret"
+            placeholder="Paste secret key IG di sini"
+        >
+
+        <button id="copyLinkBtn" onclick="copyLink()">
+            Copy Link
+        </button>
+
+    </div>
+
+    <div id="code" onclick="copyCode()">
+        ------
+    </div>
+
+    <div id="timer"></div>
+
+    <div id="copyText">
+        Code copied
+    </div>
+
+    <div class="footer">
+        POWERED BY PANDAWA
+    </div>
+
+</div>
+
+<script>
+
+let currentSecret = '';
+
+async function generateCode(){
+
+    if(!currentSecret){
+
+        document.getElementById('code').innerText =
+            '------';
+
+        return;
+    }
+
+    const res = await fetch('/api/code',{
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+            secret:currentSecret
+        })
+
+    });
+
+    const data = await res.json();
+
+    if(data.error){
+
+        document.getElementById('code').innerText =
+            'ERROR';
+
+        return;
+    }
+
+    document.getElementById('code').innerText =
+        data.code;
+}
+
+document.getElementById('secret')
+.addEventListener('input',()=>{
+
+    currentSecret =
+        document.getElementById('secret').value.trim();
+
+    generateCode();
+});
+
+function updateTimer(){
+
+    const seconds =
+        30 - (Math.floor(Date.now()/1000)%30);
+
+    document.getElementById('timer').innerText =
+        'Refresh dalam '+seconds+' detik';
+}
+
+async function copyCode(){
+
+    const code =
+        document.getElementById('code').innerText;
+
+    if(code === '------' || code === 'ERROR')
+        return;
+
+    await navigator.clipboard.writeText(code);
+
+    showMessage('Code copied');
+}
+
+async function copyLink(){
+
+    if(!currentSecret) return;
+
+    const cleanSecret =
+        currentSecret.replace(/\\s+/g,'');
+
+    const url =
+        window.location.origin +
+        '/?secret=' +
+        encodeURIComponent(cleanSecret);
+
+    await navigator.clipboard.writeText(url);
+
+    showMessage('Link copied');
+}
+
+function showMessage(text){
+
+    const copyText =
+        document.getElementById('copyText');
+
+    copyText.innerText = text;
+
+    copyText.style.opacity = '1';
+
+    setTimeout(()=>{
+        copyText.style.opacity = '0';
+    },1200);
+}
+
+function resetAll(){
+
+    currentSecret = '';
+
+    document.getElementById('secret').value = '';
+
+    document.getElementById('code').innerText =
+        '------';
+}
+
+const params =
+    new URLSearchParams(window.location.search);
+
+const secretFromUrl =
+    params.get('secret');
+
+if(secretFromUrl){
+
+    currentSecret = secretFromUrl;
+
+    document.getElementById('secret').value =
+        secretFromUrl;
+
+    generateCode();
+}
+
+setInterval(generateCode,30000);
+
+setInterval(updateTimer,1000);
+
+updateTimer();
+
+</script>
+
+</body>
+</html>

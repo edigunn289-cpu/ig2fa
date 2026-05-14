@@ -1,0 +1,25 @@
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0f0f0f;
+    color:white;
+    font-family:Arial;
+}
+
+.container{
+    background:#1a1a1a;
+    padding:40px;
+    border-radius:20px;
+    text-align:center;
+    width:320px;
+}
+
+#code{
+    font-size:50px;
+    letter-spacing:5px;
+    color:#00ff88;
+    margin:20px 0;
+}
