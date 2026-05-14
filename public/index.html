@@ -233,7 +233,12 @@ document.getElementById('secret')
 .addEventListener('input',()=>{
 
     currentSecret =
-        document.getElementById('secret').value.trim();
+        document.getElementById('secret').value
+        .replace(/\s+/g,'')
+        .toUpperCase();
+
+    document.getElementById('secret').value =
+        currentSecret;
 
     generateCode();
 });
@@ -265,7 +270,7 @@ async function copyLink(){
     if(!currentSecret) return;
 
     const cleanSecret =
-        currentSecret.replace(/\\s+/g,'');
+        currentSecret.replace(/\s+/g,'');
 
     const url =
         window.location.origin +
@@ -309,10 +314,12 @@ const secretFromUrl =
 
 if(secretFromUrl){
 
-    currentSecret = secretFromUrl;
+    currentSecret = secretFromUrl
+        .replace(/\s+/g,'')
+        .toUpperCase();
 
     document.getElementById('secret').value =
-        secretFromUrl;
+        currentSecret;
 
     generateCode();
 }
